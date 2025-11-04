@@ -1,5 +1,5 @@
 """
-Escáner de Vulnerabilidades Web - Versión Inicial
+Escáner de Vulnerabilidades Web - Segunda Versión
 Autor: Malespina Camil
 Descripción: Analiza sitios web buscando vulnerabilidades básicas
 """
@@ -30,8 +30,7 @@ class VulnerabilityScanner:
     
     ¿Por qué usar una clase?
     - Organiza el código relacionado
-    - Puedes crear múltiples escáneres si quieres
-    - Es la forma "profesional" de hacerlo
+    - Puedes crear múltiples escáneres si se quiere
     """
     
     def __init__(self, url):
@@ -169,6 +168,71 @@ class VulnerabilityScanner:
         print("="*60)
     
     
+    def generate_html_report(self):
+        """
+        Genera un reporte HTML bonito usando Jinja2.
+        
+        ¿Cómo funciona?
+        1. Cargamos la plantilla HTML (el molde)
+        2. Le pasamos los datos del escaneo
+        3. Jinja2 rellena la plantilla con los datos
+        4. Guardamos el resultado en un archivo .html
+        """
+        from jinja2 import Environment, FileSystemLoader
+        import os
+        
+        print("\n[+] Generando reporte HTML...")
+        
+        # Configuramos Jinja2 para que busque plantillas en la carpeta 'templates'
+        # __file__ es la ruta de este archivo (scanner.py)
+        # dirname(__file__) es la carpeta donde está este archivo (src/)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)  # Subimos un nivel (raíz del proyecto)
+        templates_dir = os.path.join(parent_dir, 'templates')
+        
+        # Creamos el "entorno" de Jinja2
+        env = Environment(loader=FileSystemLoader(templates_dir))
+        
+        # Cargamos la plantilla
+        template = env.get_template('report_template.html')
+        
+        # Calculamos estadísticas para el resumen
+        headers_data = self.results.get('security_headers', {})
+        headers_present = sum(1 for h in headers_data.values() if h.get('present'))
+        headers_missing = len(headers_data) - headers_present
+        
+        # Preparamos los datos para la plantilla
+        # Estos son los "espacios en blanco" que rellenaremos
+        template_data = {
+            'url': self.url,
+            'scan_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'ssl': self.results.get('ssl', {}),
+            'security_headers': headers_data,
+            'headers_present': headers_present,
+            'headers_missing': headers_missing
+        }
+        
+        # ¡Jinja2 hace la magia! Rellena la plantilla con los datos
+        html_content = template.render(**template_data)
+        
+        # Guardamos el HTML en un archivo
+        results_dir = os.path.join(parent_dir, 'results')
+        os.makedirs(results_dir, exist_ok=True)  # Crea la carpeta si no existe
+        
+        # Nombre del archivo: reporte_example.com_2024-01-15_14-30-45.html
+        safe_url = self.url.replace('https://', '').replace('http://', '').replace('/', '_')
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = f'reporte_{safe_url}_{timestamp}.html'
+        filepath = os.path.join(results_dir, filename)
+        
+        # Escribimos el contenido HTML al archivo
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        print(f"[✓] Reporte generado: {filepath}")
+        return filepath
+    
+    
     def run_scan(self):
         """
         Ejecuta todos los análisis en orden.
@@ -183,7 +247,10 @@ class VulnerabilityScanner:
         # Mostramos el resumen
         self.generate_summary()
         
-        return self.results
+        # Generamos el reporte HTML
+        report_path = self.generate_html_report()
+        
+        return self.results, report_path
 
 
 # ============================================
