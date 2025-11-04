@@ -21,7 +21,7 @@ Herramienta en Python para analizar la seguridad básica de sitios web, enfocada
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/TU_USUARIO/escaner-vulnerabilidades.git
+git clone https://github.com/CamilMalespina/escaner-vulnerabilidades.git
 cd escaner-vulnerabilidades
 ```
 
