@@ -104,6 +104,7 @@ class VulnerabilityScanner:
         except RequestException as e:
             # Si algo salió mal (no hay internet, sitio caído, etc.)
             print(f"[✗] Error al conectar con {self.url}: {e}")
+            # NOTA: En caso de error, guardamos un diccionario con la clave 'error'
             self.results['security_headers'] = {'error': str(e)}
     
     
@@ -145,26 +146,35 @@ class VulnerabilityScanner:
         # Resumen de SSL/HTTPS
         if 'ssl' in self.results:
             print("🔒 HTTPS:")
-            print(f"   {self.results['ssl']['message']}\n")
+            print(f"   {self.results['ssl']['message']}\n")
         
         # Resumen de Security Headers
         if 'security_headers' in self.results and 'error' not in self.results['security_headers']:
-            print("🛡️  SECURITY HEADERS:")
+            print("🛡️  SECURITY HEADERS:")
             
             headers_data = self.results['security_headers']
+            
+            # --- CORRECCIÓN IMPLÍCITA: Esta sección ya maneja el caso de error debido al 'if' previo ---
             present_count = sum(1 for h in headers_data.values() if h.get('present'))
             total_count = len(headers_data)
             
-            print(f"   Headers encontrados: {present_count}/{total_count}\n")
+            print(f"   Headers encontrados: {present_count}/{total_count}\n")
             
             for header, data in headers_data.items():
                 status = "✓" if data['present'] else "✗"
-                print(f"   [{status}] {header}")
-                print(f"       {data['description']}")
+                print(f"   [{status}] {header}")
+                print(f"       {data['description']}")
                 if data['present']:
-                    print(f"       Valor: {data['value']}")
+                    print(f"       Valor: {data['value']}")
                 print()
         
+        elif 'security_headers' in self.results and 'error' in self.results['security_headers']:
+            # Manejo explícito del error de conexión en el resumen de texto
+            print("🛡️  SECURITY HEADERS:")
+            print(f"   [✗] ERROR DE CONEXIÓN: No se pudo obtener la respuesta del servidor.")
+            print(f"       Detalle: {self.results['security_headers']['error']}\n")
+
+
         print("="*60)
     
     
@@ -198,18 +208,28 @@ class VulnerabilityScanner:
         
         # Calculamos estadísticas para el resumen
         headers_data = self.results.get('security_headers', {})
-        headers_present = sum(1 for h in headers_data.values() if h.get('present'))
-        headers_missing = len(headers_data) - headers_present
         
+        # --- CORRECCIÓN AQUÍ ---
+        is_error = 'error' in headers_data
+        
+        if not is_error:
+            # Si NO es un error, calculamos normalmente.
+            headers_present = sum(1 for h in headers_data.values() if isinstance(h, dict) and h.get('present'))
+            headers_missing = len(headers_data) - headers_present
+        else:
+            # Si ES un error, las estadísticas son 0.
+            headers_present = 0
+            headers_missing = 0
+            
         # Preparamos los datos para la plantilla
-        # Estos son los "espacios en blanco" que rellenaremos
         template_data = {
             'url': self.url,
             'scan_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'ssl': self.results.get('ssl', {}),
-            'security_headers': headers_data,
+            'security_headers': headers_data, 
             'headers_present': headers_present,
-            'headers_missing': headers_missing
+            'headers_missing': headers_missing,
+            'connection_error': is_error # Añadimos esta bandera para el template
         }
         
         # ¡Jinja2 hace la magia! Rellena la plantilla con los datos
