@@ -19,6 +19,9 @@ from urllib.parse import urlparse
 # Para fechas en los reportes
 from datetime import datetime
 
+# Importamos nuestro detector de SQL Injection
+from sql_injection import SQLInjectionDetector
+
 
 # ============================================
 # CLASE PRINCIPAL

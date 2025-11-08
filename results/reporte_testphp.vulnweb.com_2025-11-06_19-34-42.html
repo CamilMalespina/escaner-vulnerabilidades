@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Vulnerabilidades - {{ url }}</title>
+    <title>Reporte de Vulnerabilidades - http://testphp.vulnweb.com</title>
     <style>
         /* CSS - Define cómo se ve cada elemento HTML */
         
@@ -194,8 +194,8 @@
         <!-- HEADER -->
         <div class="header">
             <h1>🔐 Reporte de Seguridad</h1>
-            <div class="url">{{ url }}</div>
-            <div class="date">📅 {{ scan_date }}</div>
+            <div class="url">http://testphp.vulnweb.com</div>
+            <div class="date">📅 2025-11-06 19:34:42</div>
         </div>
         
         <!-- CONTENIDO -->
@@ -204,24 +204,19 @@
             <!-- RESUMEN RÁPIDO -->
             <div class="summary">
                 <div class="summary-box">
-                    <div class="number">{{ ssl.enabled | int }}</div>
+                    <div class="number">0</div>
                     <div class="label">HTTPS Habilitado</div>
                 </div>
                 <div class="summary-box">
-                    <div class="number">{{ headers_present }}</div>
+                    <div class="number">0</div>
                     <div class="label">Headers de Seguridad</div>
                 </div>
                 <div class="summary-box">
-                    <div class="number">{{ headers_missing }}</div>
+                    <div class="number">5</div>
                     <div class="label">Headers Faltantes</div>
                 </div>
                 </div>
-                {% if sqli_tested %}
-                <div class="summary-box">
-                    <div class="number" style="{% if sqli_vulns > 0 %}color: #e53e3e{% else %}color: #48bb78{% endif %}">{{ sqli_vulns }}</div>
-                    <div class="label">Vulnerabilidades SQLi</div>
-                </div>
-                {% endif %}
+                
             </div>
             
             <!-- SECCIÓN SSL/HTTPS -->
@@ -230,13 +225,11 @@
                 <div class="result-card">
                     <h3>
                         Estado de la Conexión
-                        {% if ssl.enabled %}
-                        <span class="badge success">✓ SEGURO</span>
-                        {% else %}
+                        
                         <span class="badge danger">✗ INSEGURO</span>
-                        {% endif %}
+                        
                     </h3>
-                    <p>{{ ssl.message }}</p>
+                    <p>⚠️ El sitio NO usa HTTPS (inseguro)</p>
                 </div>
             </div>
             
@@ -248,53 +241,95 @@
                 </p>
                 
                 <!-- Iteramos sobre cada header -->
-                {% for header_name, header_data in security_headers.items() %}
+                
                 <div class="result-card">
                     <h3>
-                        {{ header_name }}
-                        {% if header_data.present %}
-                        <span class="badge success">✓ PRESENTE</span>
-                        {% else %}
+                        X-Frame-Options
+                        
                         <span class="badge danger">✗ AUSENTE</span>
-                        {% endif %}
+                        
                     </h3>
-                    <p><strong>Descripción:</strong> {{ header_data.description }}</p>
-                    {% if header_data.present %}
-                    <p><strong>Valor:</strong> <code>{{ header_data.value }}</code></p>
-                    {% else %}
+                    <p><strong>Descripción:</strong> Protege contra clickjacking</p>
+                    
                     <p style="color: #e53e3e;">⚠️ <strong>Recomendación:</strong> Se recomienda implementar este header para mejorar la seguridad.</p>
-                    {% endif %}
+                    
                 </div>
-                {% endfor %}
+                
+                <div class="result-card">
+                    <h3>
+                        X-Content-Type-Options
+                        
+                        <span class="badge danger">✗ AUSENTE</span>
+                        
+                    </h3>
+                    <p><strong>Descripción:</strong> Previene MIME type sniffing</p>
+                    
+                    <p style="color: #e53e3e;">⚠️ <strong>Recomendación:</strong> Se recomienda implementar este header para mejorar la seguridad.</p>
+                    
+                </div>
+                
+                <div class="result-card">
+                    <h3>
+                        Strict-Transport-Security
+                        
+                        <span class="badge danger">✗ AUSENTE</span>
+                        
+                    </h3>
+                    <p><strong>Descripción:</strong> Fuerza HTTPS</p>
+                    
+                    <p style="color: #e53e3e;">⚠️ <strong>Recomendación:</strong> Se recomienda implementar este header para mejorar la seguridad.</p>
+                    
+                </div>
+                
+                <div class="result-card">
+                    <h3>
+                        Content-Security-Policy
+                        
+                        <span class="badge danger">✗ AUSENTE</span>
+                        
+                    </h3>
+                    <p><strong>Descripción:</strong> Previene XSS y otros ataques</p>
+                    
+                    <p style="color: #e53e3e;">⚠️ <strong>Recomendación:</strong> Se recomienda implementar este header para mejorar la seguridad.</p>
+                    
+                </div>
+                
+                <div class="result-card">
+                    <h3>
+                        X-XSS-Protection
+                        
+                        <span class="badge danger">✗ AUSENTE</span>
+                        
+                    </h3>
+                    <p><strong>Descripción:</strong> Protección adicional contra XSS</p>
+                    
+                    <p style="color: #e53e3e;">⚠️ <strong>Recomendación:</strong> Se recomienda implementar este header para mejorar la seguridad.</p>
+                    
+                </div>
+                
             </div>
             
             <!-- RECOMENDACIONES -->
             <div class="section" style="border-left-color: #f6ad55;">
                 <h2><span class="icon">💡</span> Recomendaciones</h2>
-                {% if headers_missing > 0 %}
+                
                 <div class="result-card">
                     <h3>Headers Faltantes</h3>
-                    <p>Se detectaron <strong>{{ headers_missing }}</strong> security headers faltantes. 
+                    <p>Se detectaron <strong>5</strong> security headers faltantes. 
                     Implementar estos headers puede mejorar significativamente la seguridad de tu aplicación web.</p>
                 </div>
-                {% endif %}
                 
-                {% if not ssl.enabled %}
+                
+                
                 <div class="result-card">
                     <h3>HTTPS No Habilitado</h3>
                     <p>⚠️ <strong>Crítico:</strong> Tu sitio no usa HTTPS. Esto significa que toda la información 
                     viaja sin encriptar y puede ser interceptada. Se recomienda obtener un certificado SSL 
                     (puedes usar <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a> gratis).</p>
                 </div>
-                {% endif %}
                 
-                {% if ssl.enabled and headers_missing == 0 %}
-                <div class="result-card">
-                    <h3>¡Excelente Trabajo!</h3>
-                    <p>✅ Tu sitio tiene HTTPS habilitado y todos los security headers básicos implementados. 
-                    La seguridad básica está cubierta.</p>
-                </div>
-                {% endif %}
+                
+                
             </div>
             
         </div>
