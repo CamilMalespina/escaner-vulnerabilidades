@@ -18,8 +18,8 @@ results/*.pdf
 results/*.json
 
 # Mantener la carpeta results pero vacía
+results/*
 !results/.gitkeep
-
 # Variables de entorno (si llegas a usarlas)
 .env
 .env.local
