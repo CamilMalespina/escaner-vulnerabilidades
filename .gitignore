@@ -1,0 +1,39 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Reportes generados (no subir escaneos reales)
+results/*.html
+results/*.pdf
+results/*.json
+
+# Mantener la carpeta results pero vacía
+!results/.gitkeep
+
+# Variables de entorno (si llegas a usarlas)
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
